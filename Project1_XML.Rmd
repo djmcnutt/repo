@@ -1,0 +1,98 @@
+---
+title: "Project 1 XML"
+author: "Dexter McNutt"
+date: "Oct 18, 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 6
+    toc_float: no
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(XML)
+library(xml2)
+library(knitr)
+library(tidyverse)
+```
+
+# XML What is it?
+
+XML is a markup language (a system for annotating  a document in a way that is syntactically distinguishable from text) that defines a set of rules for encoding documents. It is also readable by both humans and machines which makes it widely used, so much so that it has become the default for many office productivity tools such as Microsoft Office.
+
+Info found here:
+https://en.wikipedia.org/wiki/XML
+https://en.wikipedia.org/wiki/Markup_language
+
+# Using the XML Package
+
+The XML package is simple and has a pretty straightforward syntax. Several functions work in tandem to bring the data in. `xmlParse()` returns and object of the XMLInternalDocument class while `xmlroot()` gets access to the root node and its elements and then to extract the data from the root node we use `XMLSapply()` iteratively.
+
+# The Data
+
+I had to make this data up because no matter how hard I tried I could not pull real data from online, and I didn't want to fail the project, but I ran out of time searching online for this stuff so I don't have much more to show on this. It's salary data for a list of employees with id numbers and the departments they work in.
+
+## Reading it in
+ As you can see the xmldataframe does a pretty good job of bringing in the data once it has been parsed and the root node identified.
+```{r xml, echo=FALSE, message=FALSE, collapse=TRUE}
+setwd("C:/Users/dmcnutt/Desktop")
+
+# Give the input file name to the function.
+result <- xmlParse(file = "salary.xml")
+
+# Exract the root node form the xml file.
+rootnode <- xmlRoot(result)
+
+# Find number of nodes in the root.
+rootsize <- xmlSize(rootnode)
+
+# Convert the input xml file to a data frame.
+salary <- xmlToDataFrame("salary.xml")
+```
+
+## Contingency Tables
+Here you can see a frequency breakdown of the number of employees by department
+```{r xml2, echo=TRUE, collapse=FALSE}
+ftable(kable(salary$DEPT))
+
+```
+
+## Bar Charts
+So if we look at a highly ranked names ""Olivia"" and ""Jordan"" on the list we can see how popular these names are based on gender:
+```{r xml3, echo=TRUE, collapse=FALSE}
+satell_r <-ifelse(crabs$satell>=1,1,0)
+
+g4 <- ggplot(data=salary, aes(x=factor(DEPT)))
+g4 + geom_bar(aes(fill=factor(salary)),position="dodge") + 
+    labs(x="Department", title = "Frequency of Salary Count by Department") + 
+    scale_x_discrete(labels=c("IT","Operations","HR","Finance"))
+```
+
+## Boxplots and Scatterplots
+```{r xml4, echo=TRUE, collapse=FALSE}
+# Simple Scatterplot
+attach(babyNamesfinal)
+boxplot(as.numeric(count)~as.numeric(rank), main="Box Plots",
+   xlab="Ethnicity", ylab="Count")
+```
+
+```{r xml5, echo=TRUE, collapse=FALSE}
+# Simple Scatterplot
+attach(babyNamesfinal)
+plot(count, rank, main="Scatterplot Example",
+   xlab="Count", ylab="Rank", pch=19)
+```
+
+
+
+
+
+
+
+
+
+

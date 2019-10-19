@@ -1,0 +1,114 @@
+---
+title: "Project 1 JSON"
+author: "Dexter McNutt"
+date: "Oct 18, 2019"
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: 6
+    toc_float: no
+  pdf_document: default
+---
+
+```{r setup, include=FALSE, error=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(jsonlite)
+library(knitr)
+library(tidyverse)
+```
+
+# JSON What is it?
+
+JSON is a completely language dependent data interchange format that stands for "JavaScript Object Notation" and it is the most widely used data format for data interchange on the web. It's a great way to store data because it's based on a subset of the JavaScript programming language making it easy to understand.
+
+Info found here: 
+https://www.geeksforgeeks.org/parse-json-java/
+
+# Using the jsonlite Package
+
+The `JSONLITE` package is simple and has a pretty straightforward syntax and is one of the most widely used packages in R. It also makes saving a data frame in JSON and turning a data frame into a 'flat' JSON file very easy making it a naturally choice.
+
+# The Data
+
+I found a dataset that lists and ranks, based on counts, the most popular baby names. I found the data as open source on data.gov. The variables are the year of birth (birthyear), gender(sex), ethnicity(ethnicity), childs first name(first_name), count(count), and the rank of the name (rank).
+
+
+## Reading it in
+As you can see the `fromJSON()` function in the jsonlite package does a good job of pulling in the data but a little help is needed seperating out the metadata. Some options the `fromJSON()` function has are txt (a JSON string, URL, or file), simplifyVector/simplifyDataFrame/simplifyMatrix (coerce JSON arrays into a vector, data frame, or matrix respectively), and flatten (automatically flatten nested data frames into a single non-nested data frame) just to name a few.
+```{r jsonlite, echo=FALSE, message=FALSE, collapse=TRUE}
+library(gdata) # for the trim function
+
+readinnow <- function(link) {
+
+  dataRaw <- fromJSON(txt=link,simplifyDataFrame = TRUE)
+
+  data1 <- dataRaw[['data']]
+
+  data2 <- as.data.frame(data1)
+  
+  return(data2)
+
+}
+
+babyNames <- readinnow('https://data.cityofnewyork.us/api/views/25th-nujf/rows.json?accessType=DOWNLOAD')
+
+babyNamesfinal=subset(babyNames,select=-c(V1,V2,V3,V4,V5,V6,V7,V8))
+
+names(babyNamesfinal) <- c("birthyear", "sex", "ethnicity","first_name","count","rank")
+
+kable(babyNamesfinal[1:5,], caption="Baby Name Data")
+```
+
+## Contingency Tables
+Here you can see I had to combine a few levels of the column ethnicity:
+```{r jsonlite2, echo=TRUE, collapse=FALSE}
+levels(babyNamesfinal$ethnicity)
+
+table(kable(babyNamesfinal$ethnicity))
+
+levels(babyNamesfinal$ethnicity) <- c("ASIAN AND PACI","ASIAN AND PACI","BLACK NON HISP","BLACK NON HISP","HISPANIC","WHITE NON HISP", "WHITE NON HISP")
+
+ftable(kable(babyNamesfinal$ethnicity))
+
+levels(babyNamesfinal$ethnicity)
+```
+
+## Bar Charts
+So if we look at a highly ranked names ""Olivia"" and ""Jordan"" on the list we can see how popular these names are based on gender:
+```{r jsonlite3, echo=TRUE, collapse=FALSE}
+sex1 <- babyNamesfinal$sex[babyNamesfinal$first_name=="Olivia"]
+sex2 <- babyNamesfinal$sex[babyNamesfinal$first_name=="Jordan"]
+
+# Number of Male and Female uses of the name Olivia
+barplot(prop.table(table(sex1)))
+
+# Number of Male and Female uses of the name Jordan
+barplot(prop.table(table(sex2)))
+```
+
+## Boxplots and Scatterplots
+```{r jsonlite4, echo=TRUE, collapse=FALSE}
+# Simple Scatterplot
+attach(babyNamesfinal)
+boxplot(as.numeric(count)~as.numeric(rank), main="Box Plots",
+   xlab="Ethnicity", ylab="Count")
+```
+
+```{r jsonlite5, echo=TRUE, collapse=FALSE}
+# Simple Scatterplot
+attach(babyNamesfinal)
+plot(count, rank, main="Scatterplot Example",
+   xlab="Count", ylab="Rank", pch=19)
+```
+
+
+
+
+
+
+
+
+
+
